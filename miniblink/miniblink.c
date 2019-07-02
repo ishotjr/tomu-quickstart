@@ -59,12 +59,21 @@ TOBOOT_CONFIGURATION(0);
 
 volatile uint32_t system_millis = 0;
 
+// fake random number generator
+unsigned short lfsr = 0xACE1u;
+unsigned bit;
+
+unsigned rand() {
+    bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+    return lfsr =  (lfsr >> 1) | (bit << 15);
+}
+
 void sys_tick_handler(void) {
 
     ++system_millis;
 
-    /* Every 100ms, toggle the LEDs */
-    if(system_millis % 100 == 0) {
+    /* Every 0-65.5ms, toggle the LEDs */
+    if(system_millis % (rand() / 100) == 0) {
         gpio_toggle(LED_RED_PORT, LED_RED_PIN);
         gpio_toggle(LED_GREEN_PORT, LED_GREEN_PIN);
     }
